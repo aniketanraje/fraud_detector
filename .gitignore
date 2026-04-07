@@ -1,0 +1,73 @@
+# Environment
+.venv/
+venv/
+env/
+ENV/
+.env
+.env.*
+
+# Python
+pycache/
+*.py[cod]
+*.so
+*.pyd
+*.pyo
+*.egg-info/
+*.egg
+build/
+dist/
+
+# Data and models
+data/
+!data/.gitkeep
+
+models/
+!models/.gitkeep
+
+mlruns/
+mlartifacts/
+
+# Logs
+logs/
+*.log
+
+# Results / outputs
+results/
+*.csv
+
+# Caches and temp
+.cache/
+tmp/
+temp/
+*.tmp
+
+# ML artifacts
+*.npy
+*.npz
+*.joblib
+*.pt
+*.pth
+*.ckpt
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Docker
+docker-compose.override.yml
