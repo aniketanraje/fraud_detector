@@ -1,0 +1,34 @@
+project:
+  name: "Credit Card Fraud Detection"
+  version: "1.0.0"
+  developer: "Aniket Bhosale"
+  env: "production"
+  framework: "scikit-learn"
+
+data:
+  source_url: "https://huggingface.co/datasets/sherlockab/creditcard_dataset/resolve/main/creditcard.csv"
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  filename: "creditcard.csv"
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+  datefmt: "%Y-%m-%d %H:%M:%S"
+  log_dir: "logs"
+  max_bytes: 10485760
+  backup_count: 5
+
+mlflow:
+  tracking_url: "mlruns"
+  experiment_name: "credit_fraud_detection"
+  tags:
+    developer: "Aniket"
+    env: "production"
+    framework: "scikit-learn"
+
+artifacts:
+  models_dir: "models"
+  scaler_filename: "scaler.pkl"
+  model_filename: "model.pkl"
+  feature_order_filename: "feature_order.json"
