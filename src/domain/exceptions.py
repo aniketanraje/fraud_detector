@@ -22,7 +22,7 @@ class DataValidationError(ProjectError):
     pass
 
 
-class SchemaValidationError(DataValidationError):
+class SchemaViolationError(DataValidationError):
     """Raised when the loaded dataset fails schema or integrity checks."""
     pass
 
