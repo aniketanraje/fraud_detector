@@ -26,7 +26,7 @@ TRAIN_CONFIG_PATH: Path = CONFIGS_DIR / "train_config.yaml"
 SCHEMA_CONFIG_PATH: Path = CONFIGS_DIR / "schema.yaml"
 
 # Data Source
-HF__DATASET_URL: str = os.getenv(
+HF_DATASET_URL: str = os.getenv(
     "HF_DATASET_URL",
     "https://huggingface.co/datasets/sherlockab/creditcard_dataset/resolve/main/creditcard.csv",
 )
