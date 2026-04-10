@@ -41,4 +41,4 @@ fi
 
 # --- Run Streamlit ---
 echo "🌐 Launching Streamlit app..."
-python -m streamlit run app/main_ui.p
+python -m streamlit run app/main_ui.py
