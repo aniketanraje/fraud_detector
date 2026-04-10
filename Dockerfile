@@ -32,6 +32,7 @@ COPY --from=builder /install /usr/local
 COPY src/     ./src/
 COPY app/     ./app/
 COPY configs/ ./configs/
+COPY models/ ./models/
 COPY requirements.txt .
 
 # Create runtime directories

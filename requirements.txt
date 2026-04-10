@@ -80,8 +80,7 @@ sympy==1.14.0
 tenacity==8.5.0
 threadpoolctl==3.6.0
 toml==0.10.2
-torch==2.11.0
-tornado==6.5.5
+torch==2.2.2 --index-url https://download.pytorch.org/whl/cputornado==6.5.5
 typing-extensions==4.15.0
 tzdata==2026.1
 urllib3==2.2.1
