@@ -51,14 +51,14 @@ class DataValidator:
             Validated Dataframe (unchanged if all checks pass).
 
         Raises:
-            SchemaValidationError: If required columns are missing or dtype is wrong.
+            SchemaViolationError: If required columns are missing or dtype is wrong.
             DataQualityError: If constraint violation are detected. e.g. Amount < 0.
         """
         # Missing column check
         all_required = self._expected_features + [self._target]
         missing = [c for c in all_required if c not in df.columns]
         if missing:
-            raise SchemaValidationError(
+            raise SchemaViolationError(
                 f"Missing required columns: {len(missing)}: {missing}"
             )
 
@@ -74,7 +74,7 @@ class DataValidator:
         ]
 
         if non_numeric:
-            raise SchemaValidationError(
+            raise SchemaViolationError(
                 f"Non-numeric columns detected: {non_numeric}"
             )
 
