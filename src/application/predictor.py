@@ -17,6 +17,9 @@ from src.infrastructure.storage import ArtifactStore
 
 import yaml
 
+import torch
+import json
+from src.application.dl_model import FraudMLP
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -64,7 +67,7 @@ class Predictor:
         self._model_version: str =""
         self._store: ArtifactStore = ArtifactStore(base_dir=MODELS_DIR)
         self._loaded: bool = False
-
+        self._model_type: str = "sklearn"
 
     @classmethod
     def get_instance(cls) -> Predictor:
@@ -110,11 +113,37 @@ class Predictor:
         for path in (model_path, scaler_path, feature_order_path):
             if not self._store.is_artifact_healthy(path):
                 raise ModelRegistrationError(f"Artifact missing or empty: {path}")
-        self._model = self._store.load_pickle(model_path)
+        # Model loading
+
+        model_path = version_dir / "model.pkl"
+        torch_model_path = version_dir / "model.pt"
+        meta_path = version_dir / "model_meta.json"
+
+        # Detect model type
+        if torch_model_path.exists():
+            if meta_path.exists():
+                with open(meta_path) as f:
+                    meta = json.load(f)
+                self._model_type = meta.get("model_type", "pytorch_mlp")
+            else:
+                self._model_type = "pytorch_mlp"
+
+            input_dim = len(self._feature_order)
+            model = FraudMLP(input_dim)
+            model.load_state_dict(torch.load(torch_model_path))
+            model.eval()
+            self._model = model
+
+        else:
+            self._model = self._store.load_pickle(model_path)
+            self._model_type = "sklearn"
+
+        # Load scaler + feature order
         self._scaler = self._store.load_pickle(scaler_path)
         self._feature_order = self._store.load_json(feature_order_path)
         self._model_version = version_dir.name
 
+        # Load schema config
         with open(SCHEMA_CONFIG_PATH, "r", encoding="utf-8") as f:
             schema_cfg = yaml.safe_load(f)
         self._scale_cols = schema_cfg["schema"]["scaled_features"]
@@ -165,7 +194,13 @@ class Predictor:
 
         try:
             X = self._align_features(transaction)
-            probability = float(self._model.predict_proba(X)[0, 1])
+            if self._model_type == "pytorch_mlp":
+                with torch.no_grad():
+                    X_tensor = torch.tensor(X, dtype=torch.float32)
+                    logits = self._model(X_tensor)
+                    probability = float(torch.sigmoid(logits)[0].item())
+            else:
+                probability = float(self._model.predict_proba(X)[0, 1])
             is_fraud = probability >= _FRAUD_THRESHOLD
             risk_level = _resolve_risk_level(probability)
 
@@ -204,7 +239,13 @@ class Predictor:
         try:
             X = df[self._feature_order].copy()
             X[self._scale_cols] = self._scaler.transform(X[self._scale_cols])
-            probabilities = self._model.predict_proba(X.values)[:, 1]
+            if self._model_type == "pytorch_mlp":
+                with torch.no_grad():
+                    X_tensor = torch.tensor(X.values, dtype=torch.float32)
+                    logits = self._model(X_tensor)
+                    probabilities = torch.sigmoid(logits).numpy().flatten()
+            else:
+                probabilities = self._model.predict_proba(X.values)[:, 1]
 
             result = df.copy()
             result["fraud_probability"] = probabilities
@@ -230,6 +271,11 @@ class Predictor:
     def model_version(self) -> str:
         """Return the currently loaded model version string."""
         return self._model_version
+
+    @property
+    def model_type(self) -> str:
+        """Return the currently loaded model type."""
+        return self._model_type
 
     @property
     def is_healthy(self) -> bool:

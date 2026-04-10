@@ -6,6 +6,9 @@ import logging
 import time
 from typing import Protocol, runtime_checkable
 
+import torch
+import json
+
 import numpy as np
 import yaml
 
@@ -216,7 +219,7 @@ class TrainingPhase:
                 open(TRAIN_CONFIG_PATH, "r", encoding="utf-8")
             )
 
-            model_names = ["xgboost", "random_forest"]
+            model_names = ["xgboost", "random_forest", "pytorch_mlp"]
 
             for name in model_names:
                 params = train_cfg.get(name, {})
@@ -309,10 +312,25 @@ class RegistrationPhase:
             best_model = context.trained_models[context.best_model_name]
             preprocessor: Preprocessor = context.config["_preprocessor"]
 
-            store.save_pickle(best_model, version_dir, "model.pkl")
+
+            # Save model
+            if context.best_model_name == "pytorch_mlp":
+                torch.save(best_model.model.state_dict(), version_dir / "model.pt")
+            else:
+                store.save_pickle(best_model, version_dir, "model.pkl")
+
+            # Save scaler + features
             store.save_pickle(preprocessor.scaler, version_dir, "scaler.pkl")
             store.save_json(preprocessor.feature_order, version_dir, "feature_order.json")
 
+            # Save metadata
+            meta = {
+                "model_type": context.best_model_name,
+                "framework": "pytorch" if context.best_model_name == "pytorch_mlp" else "sklearn"
+            }
+
+            with open(version_dir / "model_meta.json", "w") as f:
+                json.dump(meta, f)
             logger.info("Artifacts registered — version: %s", version)
 
             return PhaseResult(
@@ -356,7 +374,13 @@ class ReportingPhase:
             best_model = context.trained_models[context.best_model_name]
             preprocessor: Preprocessor = context.config["_preprocessor"]
             metrics = context.evaluation_results[context.best_model_name]
-            y_prob = best_model.predict_proba(context.X_test)[:, 1]
+            if context.best_model_name == "pytorch_mlp":
+                with torch.no_grad():
+                    X_tensor = torch.tensor(context.X_test, dtype=torch.float32)
+                    logits = best_model.model(X_tensor)
+                    y_prob = torch.sigmoid(logits).numpy().flatten()
+            else:
+                y_prob = best_model.predict_proba(context.X_test)[:, 1]
 
             train_cfg = yaml.safe_load(
                 open(TRAIN_CONFIG_PATH, "r", encoding="utf-8")

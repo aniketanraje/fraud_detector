@@ -100,7 +100,21 @@ class ModelTrainer:
 
         elif self.model_name == "random_forest":
             return self._build_random_forest()
+        elif self.model_name == "pytorch_mlp":
+            from src.application.dl_model import TorchModelWrapper
 
+            input_dim = self.params.get("input_dim")
+
+            if input_dim is None:
+                raise ValueError("input_dim must be provided for pytorch_mlp")
+
+            return TorchModelWrapper(
+                input_dim=input_dim,
+                epochs=self.params.get("epochs", 10),
+                batch_size=self.params.get("batch_size", 1024),
+                lr=self.params.get("lr", 1e-3),
+                weight_decay=self.params.get("weight_decay", 1e-5),
+            )
         else:
             raise TrainingError(f"Unknown model name: {self.model_name}")
 
@@ -138,6 +152,8 @@ class ModelTrainer:
         Raises:
             TrainingError: If fitting fails.
        """
+       if self.model_name == "pytorch_mlp":
+           self.params["input_dim"] = X_train.shape[1]
        model = self._build_model(y_train)
        logger.info("Training %s on %d samples...", self.model_name, len(y_train))
 

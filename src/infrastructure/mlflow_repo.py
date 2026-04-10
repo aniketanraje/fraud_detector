@@ -13,7 +13,10 @@ import mlflow.sklearn
 import numpy as np
 from sklearn.metrics import precision_recall_curve
 
+import torch
+
 from src.domain.exceptions import ReportingError
+
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -93,6 +96,11 @@ class MLflowRepository:
             with mlflow.start_run(tags=self.tags) as run:
                 # parameters
                 mlflow.log_params(params)
+                mlflow.log_param("model_type", params.get("model_name"))
+
+                if params.get("model_name") == "pytorch_mlp":
+                    mlflow.log_param("framework", "pytorch")
+                    mlflow.log_param("epochs", getattr(model, "epochs", None))
                 mlflow.log_param("model_version", model_version)
 
                 # Metrics - prioritise AUPRC
@@ -100,11 +108,23 @@ class MLflowRepository:
                     mlflow.log_metric(name, value)
 
                 # Model artifacts
-                mlflow.sklearn.log_model(
-                    sk_model=model,
-                    artifact_path="model",
-                    registered_model_name="fraude_detector"
-                )
+                # Model artifacts
+                if params.get("model_name") == "pytorch_mlp":
+                    import tempfile
+
+                    with tempfile.NamedTemporaryFile(suffix=".pt", delete=False) as tmp:
+                        torch.save(model.model.state_dict(), tmp.name)
+                        tmp_path = tmp.name
+
+                    mlflow.log_artifact(tmp_path, artifact_path="model")
+                    os.unlink(tmp_path)
+
+                else:
+                    mlflow.sklearn.log_model(
+                        sk_model=model,
+                        artifact_path="model",
+                        registered_model_name="fraud_detector"
+                    )
 
                 # Scaler as generic artifact
                 import tempfile, pickle
