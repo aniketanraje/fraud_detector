@@ -1,3 +1,8 @@
+```
+chmod +x run.sh
+./run.sh
+```
+
 # 🛡️ Credit Card Fraud Detection — Production ML System
 
 **Author:** Aniket Bhosale | `aniketbhosale2808@gmail.com`  
@@ -18,13 +23,15 @@ The domain problem (fraud detection) is secondary. The primary signal is the sys
 ## Architecture
 
 ```
-src/
-├── domain/          # Framework-agnostic core — entities, exceptions
-├── infrastructure/  # External integrations — HuggingFace, MLflow, storage
-└── application/     # Orchestration — preprocessor, trainer, predictor, pipeline
-app/                 # Streamlit UI — multi-tab interface
-configs/             # YAML configs — base, train, schema
-tests/               # Unit tests — preprocessor, schema validation
+fraud-detector/
+├── run.sh              # One-command setup & run script
+├── src/                # Core ML pipeline (domain, application, infra)
+├── app/                # Streamlit UI
+├── configs/            # YAML configuration files
+├── tests/              # Unit tests
+├── models/             # Saved model artifacts (auto-generated)
+├── requirements.txt    # Python dependencies
+├── README.md           # Project documentation
 ```
 
 ### Layer Contracts
