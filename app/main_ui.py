@@ -72,6 +72,13 @@ def _render_sidebar(predictor: Predictor | None) -> None:
         if predictor and predictor.is_healthy:
             st.success("🟢 Model Online")
             st.code(f"Version: {predictor.model_version}", language=None)
+
+            # 🔥 ADD THIS
+            model_type = predictor.model_type
+            if model_type == "pytorch_mlp":
+                st.success("🧠 PyTorch Model Active")
+            else:
+                st.info("🌲 Sklearn Model Active")
         else:
             st.error("🔴 Model Offline")
             st.code("Run: python -m src.main --mode train", language="bash")
@@ -89,9 +96,27 @@ def _render_sidebar(predictor: Predictor | None) -> None:
             """
         )
         st.divider()
-        st.caption("Aniket Bhosale — Production ML System")
-
-
+        st.markdown(
+            """
+            <div style="
+                border: 1px solid #444;
+                padding: 12px;
+                border-radius: 8px;
+                text-align: center;
+                background-color: #111;
+            ">
+                <b>Aniket Bhosale — Production ML System</b><br><br>
+                <a href="mailto:aniketbhosale2808@gmail.com" style="text-decoration:none;">
+                    📧 aniketbhosale2808@gmail.com
+                </a>
+                &nbsp;&nbsp;|&nbsp;&nbsp;
+                <a href="tel:+917385542808" style="text-decoration:none;">
+                    📞 +91 7385542808
+                </a>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 # Tab 1: Single Transaction
 
 def _render_single_prediction(predictor: Predictor | None) -> None:
@@ -119,7 +144,7 @@ def _render_single_prediction(predictor: Predictor | None) -> None:
 
             with col_badge:
                 render_risk_badge(result.is_fraud, result.risk_level, result.probability)
-                st.caption(f"Model version: `{result.model_version}`")
+                st.caption(f"Model version: `{result.model_version}` | Type: `{predictor.model_type}`")
 
             with col_gauge:
                 render_probability_gauge(result.probability, result.risk_level)
@@ -180,6 +205,7 @@ def _render_batch_prediction(predictor: Predictor | None) -> None:
                 results[available_cols].head(100),
                 use_container_width=True,
             )
+            st.caption(f"Model used: {predictor.model_type}")
 
             csv_bytes = results.to_csv(index=False).encode("utf-8")
             st.download_button(
@@ -220,9 +246,12 @@ def _render_health_check(predictor: Predictor | None, status_msg: str) -> None:
         diagnostics = {
             "Status": "✅ Healthy" if is_healthy else "❌ Unavailable",
             "Version": model_version,
+            "Model Type": predictor.model_type if is_healthy else "—",
             "Features loaded": str(len(predictor._feature_order)) if is_healthy else "—",
             "Scaler fitted": "Yes" if (is_healthy and predictor._scaler is not None) else "No",
+
         }
+
         for k, v in diagnostics.items():
             st.markdown(f"**{k}:** {v}")
 
