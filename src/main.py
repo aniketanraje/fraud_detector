@@ -23,7 +23,7 @@ from src.domain.exceptions import ProjectError
 def _configure_logging() -> None:
     """Configure rotating file handler and stream handler for the root logger."""
     log_path = LOGS_DIR / "fraud_detection.log"
-    formater = logging.formatter(
+    formater = logging.Formatter(
         fmt="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )

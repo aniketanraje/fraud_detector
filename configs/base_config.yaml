@@ -20,7 +20,7 @@ logging:
   backup_count: 5
 
 mlflow:
-  tracking_url: "mlruns"
+  tracking_uri: "mlruns"
   experiment_name: "credit_fraud_detection"
   tags:
     developer: "Aniket"

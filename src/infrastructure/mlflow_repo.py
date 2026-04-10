@@ -206,5 +206,3 @@ class MLflowRepository:
         ax.set_title(f"Top {top_n} Feature Importances")
         fig.tight_layout()
         return fig
-
-    top_importances

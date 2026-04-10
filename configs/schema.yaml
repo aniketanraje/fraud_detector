@@ -1,4 +1,4 @@
-schemaL
+schema:
   target_column: "Class"
   feature_columns:
     - "Time"
@@ -35,7 +35,7 @@ schemaL
   expected_feature_count: 30
   expected_total_columns: 31
 
-  selected_features:
+  scaled_features:
     - "Time"
     - "Amount"
 
