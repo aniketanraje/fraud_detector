@@ -113,6 +113,10 @@ def _render_sidebar(predictor: Predictor | None) -> None:
                 <a href="tel:+917385542808" style="text-decoration:none;">
                     📞 +91 7385542808
                 </a>
+                <br><br>
+                <a href="https://github.com/aniketanraje/fraud_detector" target="_blank" style="text-decoration:none;">
+                    🔗 GitHub Repository
+                </a>
             </div>
             """,
             unsafe_allow_html=True
